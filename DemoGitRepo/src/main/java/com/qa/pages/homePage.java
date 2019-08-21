@@ -6,7 +6,10 @@ public class homePage {
 		System.out.println("Home page");
 	}
 	
-	
+	public homePage()
+	{
+		
+	}
 
 	}
 
