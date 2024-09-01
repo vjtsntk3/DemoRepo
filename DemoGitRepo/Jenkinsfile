@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'ENV', defaultValue: 'qa1', description: 'Select environment')
+        string(name: 'BRANCH', defaultValue: '', description: 'Select feature branch')
+    }
+    stages {
+        stage('Build and Test') {
+            steps {
+                git checkout $BRANCH
+                sh 'mvn clean install'
+                sh 'mvn test'
+            }
+        }
+        stage('Deploy and Verify') {
+            steps {
+                script {
+                    if (ENV == 'qa1') {
+                        sh 'deploy-to-qa1.sh'
+                        sh 'run-selenium-tests-qa1.sh'
+                        sh 'run-rest-assured-tests-qa1.sh'
+                    } else if (ENV == 'qa2') {
+                        sh 'deploy-to-qa2.sh'
+                        sh 'run-selenium-tests-qa2.sh'
+                        sh 'run-rest-assured-tests-qa2.sh'
+                    } else if (ENV == 'stage') {
+                        sh 'deploy-to-stage.sh'
+                        sh 'run-selenium-tests-stage.sh'
+                        sh 'run-rest-assured-tests-stage.sh'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Build and tests successful on $ENV environment'
+        }
+        failure {
+            echo 'Build or tests failed on $ENV environment'
+        }
+    }
+}
